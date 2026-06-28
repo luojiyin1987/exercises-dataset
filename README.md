@@ -198,7 +198,7 @@ Each record in `data/exercises.json` follows this structure:
     "en": "Lie flat on your back with your knees bent and feet flat on the ground. Place your hands behind your head with your elbows pointing outwards. Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle. Pause for a moment at the top, then slowly lower your upper body back down to the starting position. Repeat for the desired number of repetitions.",
     "it": "Sdraiati sulla schiena con le ginocchia piegate e i piedi appoggiati a terra. Metti le mani dietro la testa con i gomiti rivolti verso l'esterno. Coinvolgendo gli addominali, solleva lentamente la parte superiore del corpo da terra, piegandoti in avanti finché il busto non forma un angolo di 45 gradi. Fermati per un momento in alto, quindi abbassa lentamente la parte superiore del corpo fino alla posizione di partenza. Ripetere per il numero di ripetizioni desiderato.",
     "tr": "Sırt üstü yatın, dizlerinizi bükün ve ayaklarınızı yere düz koyun. Ellerinizi başınızın arkasına, dirsekleriniz dışa bakacak şekilde yerleştirin. Karın kaslarınızı kasarak üst vücudunuzu yerden kaldırın ve gövdeniz 45 derecelik açıya gelene kadar öne doğru kıvırın. Bir an için bu pozisyonda bekleyin, ardından yavaşça başlangıç konumuna geri dönün. İstenen tekrar sayısı için hareketi tekrarlayın.",
-    "zh": "平躺在背上，膝盖弯曲，双脚平放在地面上。双手放在头后，手肘向外展开。收紧腹部肌肉，慢慢将上半身抬离地面，向前卷曲直到躯干呈 45 度角。在顶部暂停片刻，然后慢慢将上半身放回起始位置。按 desired 次数重复。"
+    "zh": "平躺在背上，膝盖弯曲，双脚平放在地面上。双手放在头后，手肘向外展开。收紧腹部肌肉，慢慢将上半身抬离地面，向前卷曲直到躯干呈 45 度角。在顶部暂停片刻，然后慢慢将上半身放回起始位置。重复所需的次数。"
   },
   "muscle_group": "hip flexors",
   "secondary_muscles": ["hip flexors", "lower back"],
