@@ -1523,13 +1523,19 @@
     if (secondaryMuscles.length > 0)  musclesGrid.appendChild(makeMuscleGroup('Secondary', secondaryMuscles, false));
     if (primaryMuscles.length > 0 || secondaryMuscles.length > 0) modalMuscles.appendChild(musclesGrid);
 
-    // Instructions — format is always { en: [...], tr: [...] }
+    // Instructions — dynamic language tabs
     modalInstr.innerHTML = '';
-    const stepsEn = ex.instruction_steps?.en ?? [];
-    const stepsTr = ex.instruction_steps?.tr ?? [];
-    const hasTr = stepsTr.length > 0;
+    const LANGUAGES = [
+      { key: 'en', label: 'English' },
+      { key: 'it', label: 'Italiano' },
+      { key: 'tr', label: 'Türkçe' },
+      { key: 'zh', label: '中文' },
+    ];
+    const availableLangs = LANGUAGES.filter(l =>
+      (ex.instruction_steps?.[l.key]?.length ?? 0) > 0
+    );
 
-    if (stepsEn.length > 0 || stepsTr.length > 0) {
+    if (availableLangs.length > 0) {
       const instrLabel = document.createElement('span');
       instrLabel.className = 'modal-instructions-label';
       instrLabel.textContent = 'Instructions';
@@ -1548,30 +1554,26 @@
         });
       }
 
-      if (hasTr) {
+      if (availableLangs.length > 1) {
         const tabs = document.createElement('div');
         tabs.className = 'lang-tabs';
-        const tabEn = document.createElement('button');
-        tabEn.className = 'lang-tab active';
-        tabEn.textContent = 'English';
-        const tabTr = document.createElement('button');
-        tabTr.className = 'lang-tab';
-        tabTr.textContent = 'Türkçe';
-        tabs.appendChild(tabEn);
-        tabs.appendChild(tabTr);
+        const tabButtons = [];
+        availableLangs.forEach((lang, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'lang-tab' + (idx === 0 ? ' active' : '');
+          btn.textContent = lang.label;
+          btn.addEventListener('click', () => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderSteps(ex.instruction_steps[lang.key]);
+          });
+          tabButtons.push(btn);
+          tabs.appendChild(btn);
+        });
         modalInstr.appendChild(tabs);
-
-        tabEn.addEventListener('click', () => {
-          tabEn.classList.add('active'); tabTr.classList.remove('active');
-          renderSteps(stepsEn);
-        });
-        tabTr.addEventListener('click', () => {
-          tabTr.classList.add('active'); tabEn.classList.remove('active');
-          renderSteps(stepsTr);
-        });
       }
 
-      renderSteps(stepsEn.length > 0 ? stepsEn : stepsTr);
+      renderSteps(ex.instruction_steps[availableLangs[0].key]);
       modalInstr.appendChild(list);
     }
 
@@ -1674,7 +1676,9 @@
   body_part         NVARCHAR(100),
   equipment         NVARCHAR(100),
   instructions_en   NVARCHAR(MAX),
+  instructions_it   NVARCHAR(MAX),
   instructions_tr   NVARCHAR(MAX),
+  instructions_zh   NVARCHAR(MAX),
   muscle_group      NVARCHAR(100),
   secondary_muscles NVARCHAR(MAX),  -- JSON array stored as string
   target            NVARCHAR(100),
@@ -1689,7 +1693,9 @@
   body_part         VARCHAR(100),
   equipment         VARCHAR(100),
   instructions_en   TEXT,
+  instructions_it   TEXT,
   instructions_tr   TEXT,
+  instructions_zh   TEXT,
   muscle_group      VARCHAR(100),
   secondary_muscles JSONB,
   target            VARCHAR(100),
@@ -1704,7 +1710,9 @@
   body_part         VARCHAR(100),
   equipment         VARCHAR(100),
   instructions_en   TEXT,
+  instructions_it   TEXT,
   instructions_tr   TEXT,
+  instructions_zh   TEXT,
   muscle_group      VARCHAR(100),
   secondary_muscles JSON,
   target            VARCHAR(100),
@@ -1719,7 +1727,9 @@
   body_part         TEXT,
   equipment         TEXT,
   instructions_en   TEXT,
+  instructions_it   TEXT,
   instructions_tr   TEXT,
+  instructions_zh   TEXT,
   muscle_group      TEXT,
   secondary_muscles TEXT,  -- JSON array stored as string
   target            TEXT,
@@ -1779,10 +1789,10 @@
 
     exercises.forEach((ex, i) => {
       const muscles = JSON.stringify(Array.isArray(ex.secondary_muscles) ? ex.secondary_muscles : []);
-      const instrEn = ex.instructions && ex.instructions.en
-        ? ex.instructions.en
-        : (Array.isArray(ex.instruction_steps) ? ex.instruction_steps.join(' ') : (ex.instructions || ''));
-      const instrTr = ex.instructions && ex.instructions.tr ? ex.instructions.tr : '';
+      const instrEn = ex.instructions?.en ?? '';
+      const instrIt = ex.instructions?.it ?? '';
+      const instrTr = ex.instructions?.tr ?? '';
+      const instrZh = ex.instructions?.zh ?? '';
 
       const vals = [
         escStr(ex.id, db),
@@ -1791,7 +1801,9 @@
         escStr(ex.body_part, db),
         escStr(ex.equipment, db),
         escStr(instrEn, db),
+        escStr(instrIt, db),
         escStr(instrTr, db),
+        escStr(instrZh, db),
         escStr(ex.muscle_group, db),
         escStr(muscles, db),
         escStr(ex.target, db),
@@ -1800,7 +1812,7 @@
         escStr(ex.created_at, db),
       ].join(', ');
 
-      lines.push(`INSERT INTO exercises (id, name, category, body_part, equipment, instructions_en, instructions_tr, muscle_group, secondary_muscles, target, image, gif_url, created_at) VALUES (${vals});`);
+      lines.push(`INSERT INTO exercises (id, name, category, body_part, equipment, instructions_en, instructions_it, instructions_tr, instructions_zh, muscle_group, secondary_muscles, target, image, gif_url, created_at) VALUES (${vals});`);
 
       // Batch commits every 50 rows for MSSQL compatibility
       if (db === 'mssql' && (i + 1) % 50 === 0 && i + 1 < exercises.length) {
