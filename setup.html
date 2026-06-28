@@ -1502,7 +1502,7 @@ function buildInserts(exercises, db) {
 
   exercises.forEach((ex, i) => {
     const muscles = JSON.stringify(Array.isArray(ex.secondary_muscles) ? ex.secondary_muscles : []);
-    const instrEn = ex.instructions?.en ?? '';
+    const instrEn = ex.instructions?.en ?? (Array.isArray(ex.instruction_steps) ? ex.instruction_steps.join(' ') : (typeof ex.instructions === 'string' ? ex.instructions : ''));
     const instrIt = ex.instructions?.it ?? '';
     const instrTr = ex.instructions?.tr ?? '';
     const instrZh = ex.instructions?.zh ?? '';
