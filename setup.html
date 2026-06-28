@@ -1502,10 +1502,18 @@ function buildInserts(exercises, db) {
 
   exercises.forEach((ex, i) => {
     const muscles = JSON.stringify(Array.isArray(ex.secondary_muscles) ? ex.secondary_muscles : []);
-    const instrEn = ex.instructions?.en ?? (Array.isArray(ex.instruction_steps) ? ex.instruction_steps.join(' ') : (typeof ex.instructions === 'string' ? ex.instructions : ''));
-    const instrIt = ex.instructions?.it ?? '';
-    const instrTr = ex.instructions?.tr ?? '';
-    const instrZh = ex.instructions?.zh ?? '';
+    const instructionText = (lang) => {
+      const text = ex.instructions?.[lang];
+      if (typeof text === 'string' && text.trim().length > 0) return text;
+      const steps = ex.instruction_steps?.[lang];
+      return Array.isArray(steps)
+        ? steps.filter(step => String(step).trim().length > 0).join('\n')
+        : '';
+    };
+    const instrEn = instructionText('en');
+    const instrIt = instructionText('it');
+    const instrTr = instructionText('tr');
+    const instrZh = instructionText('zh');
 
     const vals = [
       escStr(ex.id, db),
