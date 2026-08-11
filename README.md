@@ -406,6 +406,31 @@ console.log("Random 6-exercise workout:", randomWorkout.map(e => e.name));
 
 ---
 
+## Cloudflare Pages Deployment
+
+Use these Cloudflare Pages build settings:
+
+```text
+Build command: npm run build
+Build output directory: .
+Root directory: /
+```
+
+The build creates the static exercise pages, taxonomy pages, sitemap, and robots file.
+
+The root `404.html` file disables the default single-page application fallback.
+
+For a manual deployment, build the site before the Wrangler command:
+
+```bash
+npm run build
+wrangler pages deploy . --project-name exercises-dataset --branch main
+```
+
+After deployment, verify `/robots.txt`, `/sitemap.xml`, and one exercise page.
+
+---
+
 ## 📄 License
 
 This project is for **educational and non-commercial purposes only**.
