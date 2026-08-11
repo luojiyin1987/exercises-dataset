@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/generate-seo.mjs",
-    "generate:seo": "node scripts/generate-seo.mjs"
+    "build": "node scripts/generate-seo.mjs && node scripts/generate-taxonomy.mjs",
+    "generate:seo": "node scripts/generate-seo.mjs && node scripts/generate-taxonomy.mjs",
+    "generate:taxonomy": "node scripts/generate-taxonomy.mjs"
   },
   "engines": {
     "node": ">=20"
