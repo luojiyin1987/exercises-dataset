@@ -16,3 +16,4 @@ __pycache__/
 /assets/taxonomy-page.css
 /sitemap.xml
 /robots.txt
+/.wrangler/
