@@ -155,6 +155,18 @@ function localizedUrl(slug, locale) {
   return `${SITE_URL}${localizedPath(slug, locale)}`;
 }
 
+function taxonomyPath(path, value) {
+  return `/${path}/${slugify(value)}/`;
+}
+
+function renderTaxonomyFact(label, value, fallback, path) {
+  const display = value || fallback;
+  const content = value
+    ? `<a href="${escapeHtml(taxonomyPath(path, value))}">${escapeHtml(display)}</a>`
+    : escapeHtml(display);
+  return `<div><dt>${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
+}
+
 function outputFileFor(slug, locale) {
   const parts = locale.prefix ? [locale.prefix, 'exercises', slug, 'index.html'] : ['exercises', slug, 'index.html'];
   return join(OUTPUT_DIR, ...parts);
@@ -217,6 +229,7 @@ function renderExercisePage(exercise, pageUrl, locale, alternateUrls, slug) {
   const gifUrl = absoluteAssetUrl(exercise.gif_url);
   const primaryMediaUrl = gifUrl || imageUrl;
   const steps = instructionSteps(exercise, locale.key);
+  const bodyPart = exercise.body_part || exercise.category;
   const secondary = Array.isArray(exercise.secondary_muscles)
     ? exercise.secondary_muscles.join(', ')
     : exercise.secondary_muscles || '';
@@ -265,7 +278,7 @@ function renderExercisePage(exercise, pageUrl, locale, alternateUrls, slug) {
 <body>
   <main class="shell">
     <div class="topbar">
-      <a class="back" href="/">← ${escapeHtml(locale.back)}</a>
+      <a class="back" href="/exercises/">← ${escapeHtml(locale.back)}</a>
       ${renderLanguageNav(locale, alternateUrls, slug)}
     </div>
     <article>
@@ -274,10 +287,10 @@ function renderExercisePage(exercise, pageUrl, locale, alternateUrls, slug) {
       <div class="media">
         ${primaryMediaUrl ? `<img src="${escapeHtml(primaryMediaUrl)}" alt="${escapeHtml(`${name} ${locale.mediaAlt}`)}" width="180" height="180" decoding="async">` : '<div></div>'}
         <dl class="facts">
-          <div><dt>${escapeHtml(locale.targetMuscle)}</dt><dd>${escapeHtml(exercise.target || locale.notSpecified)}</dd></div>
+          ${renderTaxonomyFact(locale.targetMuscle, exercise.target, locale.notSpecified, 'muscles')}
           <div><dt>${escapeHtml(locale.muscleGroup)}</dt><dd>${escapeHtml(exercise.muscle_group || locale.notSpecified)}</dd></div>
-          <div><dt>${escapeHtml(locale.bodyPart)}</dt><dd>${escapeHtml(exercise.body_part || exercise.category || locale.notSpecified)}</dd></div>
-          <div><dt>${escapeHtml(locale.equipment)}</dt><dd>${escapeHtml(exercise.equipment || locale.notSpecified)}</dd></div>
+          ${renderTaxonomyFact(locale.bodyPart, bodyPart, locale.notSpecified, 'body-parts')}
+          ${renderTaxonomyFact(locale.equipment, exercise.equipment, locale.notSpecified, 'equipment')}
         </dl>
       </div>
       ${secondary ? `<section><h2>${escapeHtml(locale.secondaryMuscles)}</h2><p class="secondary">${escapeHtml(secondary)}</p></section>` : ''}
