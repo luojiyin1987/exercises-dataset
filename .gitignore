@@ -6,6 +6,9 @@ __pycache__/
 
 # Generated SEO build artifacts
 /exercises/
+/zh/exercises/
+/it/exercises/
+/tr/exercises/
 /assets/exercise-page.css
 /sitemap.xml
 /robots.txt
