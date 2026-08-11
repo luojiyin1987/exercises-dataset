@@ -11,7 +11,7 @@
   <img src="images/0334-DsgkuIt.jpg" width="140" style="border-radius:8px; margin:4px;" />
 </p>
 
-**A comprehensive, ready-to-use fitness exercise dataset with 1,324 exercises — each with animation GIFs, thumbnail images, muscle group info, equipment data, and full bilingual instructions.**
+**A comprehensive, ready-to-use fitness exercise dataset with 1,324 exercises — each with animation GIFs, thumbnail images, muscle group info, equipment data, and full multilingual instructions (English, Italian, Turkish, Chinese).**
 
 [![Exercises](https://img.shields.io/badge/Exercises-1324-blue?style=flat-square)](data/exercises.json)
 [![Videos](https://img.shields.io/badge/Animation%20GIFs-1324-green?style=flat-square)](videos/)
@@ -64,7 +64,9 @@ Each exercise entry contains:
 | Muscle Group | Supporting / synergist muscles |
 | Equipment | Equipment required (or `body weight` for bodyweight) |
 | Instructions (EN) | Step-by-step instructions in English |
+| Instructions (IT) | Step-by-step instructions in Italian |
 | Instructions (TR) | Step-by-step instructions in Turkish |
+| Instructions (ZH) | Step-by-step instructions in Chinese |
 | Thumbnail | Static `.jpg` preview image |
 | Animation GIF | `.gif` animation showing the movement |
 
@@ -80,7 +82,7 @@ A fully client-side exercise explorer with:
 - Live search across all 1,324 exercises
 - Filter by category, equipment, and target muscle
 - Infinite scroll grid with thumbnail previews
-- Click any card to see full details, GIF animation, and bilingual instructions
+- Click any card to see full details, GIF animation, and multilingual instructions
 
 ### `setup.html` — Developer Setup Guide
 
@@ -100,6 +102,8 @@ exercises-dataset/
 │   └── exercises.json       # Full dataset — 1,324 exercise records (JSON array)
 ├── images/                  # Exercise thumbnail images (.jpg) — 1,324 files
 ├── videos/                  # Exercise animation GIFs (.gif) — 1,324 files
+├── scripts/
+│   └── translate-to-zh.js   # Batch translation script (English → Chinese)
 ├── index.html               # Interactive exercise browser (client-side, no server needed)
 ├── setup.html               # Developer setup guide (DB import + API integration)
 └── README.md
@@ -171,7 +175,9 @@ Each record in `data/exercises.json` follows this structure:
 | `body_part` | `string` | Same as `category` — body part targeted |
 | `equipment` | `string` | Required equipment (e.g. `"dumbbell"`, `"body weight"`) |
 | `instructions.en` | `string` | Full step-by-step instructions in English |
+| `instructions.it` | `string` | Full step-by-step instructions in Italian |
 | `instructions.tr` | `string` | Full step-by-step instructions in Turkish |
+| `instructions.zh` | `string` | Full step-by-step instructions in Chinese |
 | `muscle_group` | `string` | Primary synergist muscle group |
 | `secondary_muscles` | `array[string]` | Additional muscles involved |
 | `target` | `string` | Primary target muscle (e.g. `"biceps"`, `"pectoralis major"`) |
@@ -190,7 +196,9 @@ Each record in `data/exercises.json` follows this structure:
   "equipment": "body weight",
   "instructions": {
     "en": "Lie flat on your back with your knees bent and feet flat on the ground. Place your hands behind your head with your elbows pointing outwards. Engaging your abs, slowly lift your upper body off the ground, curling forward until your torso is at a 45-degree angle. Pause for a moment at the top, then slowly lower your upper body back down to the starting position. Repeat for the desired number of repetitions.",
-    "tr": "Sırt üstü yatın, dizlerinizi bükün ve ayaklarınızı yere düz koyun. Ellerinizi başınızın arkasına, dirsekleriniz dışa bakacak şekilde yerleştirin. Karın kaslarınızı kasarak üst vücudunuzu yerden kaldırın ve gövdeniz 45 derecelik açıya gelene kadar öne doğru kıvırın. Bir an için bu pozisyonda bekleyin, ardından yavaşça başlangıç konumuna geri dönün. İstenen tekrar sayısı için hareketi tekrarlayın."
+    "it": "Sdraiati sulla schiena con le ginocchia piegate e i piedi appoggiati a terra. Metti le mani dietro la testa con i gomiti rivolti verso l'esterno. Coinvolgendo gli addominali, solleva lentamente la parte superiore del corpo da terra, piegandoti in avanti finché il busto non forma un angolo di 45 gradi. Fermati per un momento in alto, quindi abbassa lentamente la parte superiore del corpo fino alla posizione di partenza. Ripetere per il numero di ripetizioni desiderato.",
+    "tr": "Sırt üstü yatın, dizlerinizi bükün ve ayaklarınızı yere düz koyun. Ellerinizi başınızın arkasına, dirsekleriniz dışa bakacak şekilde yerleştirin. Karın kaslarınızı kasarak üst vücudunuzu yerden kaldırın ve gövdeniz 45 derecelik açıya gelene kadar öne doğru kıvırın. Bir an için bu pozisyonda bekleyin, ardından yavaşça başlangıç konumuna geri dönün. İstenen tekrar sayısı için hareketi tekrarlayın.",
+    "zh": "平躺在背上，膝盖弯曲，双脚平放在地面上。双手放在头后，手肘向外展开。收紧腹部肌肉，慢慢将上半身抬离地面，向前卷曲直到躯干呈 45 度角。在顶部暂停片刻，然后慢慢将上半身放回起始位置。重复所需的次数。"
   },
   "muscle_group": "hip flexors",
   "secondary_muscles": ["hip flexors", "lower back"],
@@ -311,10 +319,12 @@ print(f"Bodyweight exercises: {len(bodyweight)}")
 categories = sorted({ex["category"] for ex in exercises})
 print("Categories:", categories)
 
-# Access bilingual instructions
+# Access multilingual instructions
 ex = exercises[0]
 print(ex["instructions"]["en"])  # English
+print(ex["instructions"]["it"])  # Italian
 print(ex["instructions"]["tr"])  # Turkish
+print(ex["instructions"]["zh"])  # Chinese
 ```
 
 ### Python — Load with Pandas
@@ -355,10 +365,12 @@ const byCategory = exercises.reduce((acc, ex) => {
   return acc;
 }, {});
 
-// Access bilingual instructions
+// Access multilingual instructions
 const ex = exercises[0];
 console.log(ex.instructions.en); // English
+console.log(ex.instructions.it); // Italian
 console.log(ex.instructions.tr); // Turkish
+console.log(ex.instructions.zh); // Chinese
 ```
 
 ### TypeScript — Type-safe Usage
@@ -372,7 +384,9 @@ interface Exercise {
   equipment: string;
   instructions: {
     en: string;
+    it: string;
     tr: string;
+    zh: string;
   };
   muscle_group: string;
   secondary_muscles: string[];

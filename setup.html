@@ -743,7 +743,9 @@ const DB_SQL = {
   body_part         NVARCHAR(100),
   equipment         NVARCHAR(100),
   instructions_en   NVARCHAR(MAX),
+  instructions_it   NVARCHAR(MAX),
   instructions_tr   NVARCHAR(MAX),
+  instructions_zh   NVARCHAR(MAX),
   muscle_group      NVARCHAR(100),
   secondary_muscles NVARCHAR(MAX),  -- JSON array stored as string
   target            NVARCHAR(100),
@@ -758,7 +760,9 @@ const DB_SQL = {
   body_part         VARCHAR(100),
   equipment         VARCHAR(100),
   instructions_en   TEXT,
+  instructions_it   TEXT,
   instructions_tr   TEXT,
+  instructions_zh   TEXT,
   muscle_group      VARCHAR(100),
   secondary_muscles JSONB,
   target            VARCHAR(100),
@@ -773,7 +777,9 @@ const DB_SQL = {
   body_part         VARCHAR(100),
   equipment         VARCHAR(100),
   instructions_en   TEXT,
+  instructions_it   TEXT,
   instructions_tr   TEXT,
+  instructions_zh   TEXT,
   muscle_group      VARCHAR(100),
   secondary_muscles JSON,
   target            VARCHAR(100),
@@ -788,7 +794,9 @@ const DB_SQL = {
   body_part         TEXT,
   equipment         TEXT,
   instructions_en   TEXT,
+  instructions_it   TEXT,
   instructions_tr   TEXT,
+  instructions_zh   TEXT,
   muscle_group      TEXT,
   secondary_muscles TEXT,  -- JSON array stored as string
   target            TEXT,
@@ -1005,7 +1013,8 @@ Console.WriteLine(exercise?.GifUrl);   // videos/0001.gif
 // Model
 record Exercise(
     string Id, string Name, string Category, string BodyPart,
-    string Equipment, string? InstructionsEn, string? InstructionsTr,
+    string Equipment, string? InstructionsEn, string? InstructionsIt,
+    string? InstructionsTr, string? InstructionsZh,
     string MuscleGroup, string[] SecondaryMuscles, string Target,
     string Image, string GifUrl, string? CreatedAt
 );`,
@@ -1373,7 +1382,7 @@ function buildLlmPrompt(fwKey, dbKey) {
 
 ## Dataset Overview
 - 1,324 fitness exercises
-- Fields: id (string, e.g. "0001"), name, category, body_part, equipment, instructions_en (full text), instructions_tr (Turkish text), muscle_group, secondary_muscles (JSON array of strings), target, image (relative path like "images/0001.jpg"), gif_url (relative path like "videos/0001.gif"), created_at
+- Fields: id (string, e.g. "0001"), name, category, body_part, equipment, instructions_en (full text), instructions_it (Italian text), instructions_tr (Turkish text), instructions_zh (Chinese text), muscle_group, secondary_muscles (JSON array of strings), target, image (relative path like "images/0001.jpg"), gif_url (relative path like "videos/0001.gif"), created_at
 
 ## Database Schema (${db.name})
 \`\`\`sql
@@ -1493,10 +1502,18 @@ function buildInserts(exercises, db) {
 
   exercises.forEach((ex, i) => {
     const muscles = JSON.stringify(Array.isArray(ex.secondary_muscles) ? ex.secondary_muscles : []);
-    const instrEn = ex.instructions && ex.instructions.en
-      ? ex.instructions.en
-      : (Array.isArray(ex.instruction_steps) ? ex.instruction_steps.join(' ') : (ex.instructions || ''));
-    const instrTr = ex.instructions && ex.instructions.tr ? ex.instructions.tr : '';
+    const instructionText = (lang) => {
+      const text = ex.instructions?.[lang];
+      if (typeof text === 'string' && text.trim().length > 0) return text;
+      const steps = ex.instruction_steps?.[lang];
+      return Array.isArray(steps)
+        ? steps.filter(step => String(step).trim().length > 0).join('\n')
+        : '';
+    };
+    const instrEn = instructionText('en');
+    const instrIt = instructionText('it');
+    const instrTr = instructionText('tr');
+    const instrZh = instructionText('zh');
 
     const vals = [
       escStr(ex.id, db),
@@ -1505,7 +1522,9 @@ function buildInserts(exercises, db) {
       escStr(ex.body_part, db),
       escStr(ex.equipment, db),
       escStr(instrEn, db),
+      escStr(instrIt, db),
       escStr(instrTr, db),
+      escStr(instrZh, db),
       escStr(ex.muscle_group, db),
       escStr(muscles, db),
       escStr(ex.target, db),
@@ -1514,7 +1533,7 @@ function buildInserts(exercises, db) {
       escStr(ex.created_at, db),
     ].join(', ');
 
-    lines.push(`INSERT INTO exercises (id, name, category, body_part, equipment, instructions_en, instructions_tr, muscle_group, secondary_muscles, target, image, gif_url, created_at) VALUES (${vals});`);
+    lines.push(`INSERT INTO exercises (id, name, category, body_part, equipment, instructions_en, instructions_it, instructions_tr, instructions_zh, muscle_group, secondary_muscles, target, image, gif_url, created_at) VALUES (${vals});`);
 
     if (db === 'mssql' && (i + 1) % 50 === 0 && i + 1 < exercises.length) {
       lines.push('GO');
