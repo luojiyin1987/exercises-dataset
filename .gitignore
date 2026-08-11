@@ -3,3 +3,9 @@ __pycache__/
 .DS_Store
 .venv/
 *.zip
+
+# Generated SEO build artifacts
+/exercises/
+/assets/exercise-page.css
+/sitemap.xml
+/robots.txt
