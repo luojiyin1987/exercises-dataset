@@ -85,6 +85,7 @@ function renderExercisePage(exercise, pageUrl) {
   const description = makeDescription({ ...exercise, name });
   const imageUrl = absoluteAssetUrl(exercise.image);
   const gifUrl = absoluteAssetUrl(exercise.gif_url);
+  const primaryMediaUrl = gifUrl || imageUrl;
   const englishSteps = instructionSteps(exercise, 'en');
   const turkishSteps = instructionSteps(exercise, 'tr');
   const secondary = Array.isArray(exercise.secondary_muscles)
@@ -129,7 +130,7 @@ function renderExercisePage(exercise, pageUrl) {
       <h1>${escapeHtml(name)}</h1>
       <p class="lede">${escapeHtml(description)}</p>
       <div class="media">
-        ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)} exercise" width="180" height="180" decoding="async">` : '<div></div>'}
+        ${primaryMediaUrl ? `<img src="${escapeHtml(primaryMediaUrl)}" alt="${escapeHtml(name)} exercise demonstration" width="180" height="180" decoding="async">` : '<div></div>'}
         <dl class="facts">
           <div><dt>Target muscle</dt><dd>${escapeHtml(exercise.target || 'Not specified')}</dd></div>
           <div><dt>Muscle group</dt><dd>${escapeHtml(exercise.muscle_group || 'Not specified')}</dd></div>
@@ -140,7 +141,6 @@ function renderExercisePage(exercise, pageUrl) {
       ${secondary ? `<section><h2>Secondary muscles</h2><p class="secondary">${escapeHtml(secondary)}</p></section>` : ''}
       ${renderSteps('How to perform', englishSteps, 'en')}
       ${renderSteps('Turkish instructions', turkishSteps, 'tr')}
-      ${gifUrl ? `<details><summary>View exercise animation</summary><img class="animation" src="${escapeHtml(gifUrl)}" alt="${escapeHtml(name)} animation" loading="lazy" decoding="async"></details>` : ''}
     </article>
   </main>
 </body>
