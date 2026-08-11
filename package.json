@@ -1,0 +1,12 @@
+{
+  "name": "exercises-dataset-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/generate-seo.mjs",
+    "generate:seo": "node scripts/generate-seo.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
