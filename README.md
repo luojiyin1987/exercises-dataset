@@ -418,6 +418,12 @@ Root directory: /
 
 The build creates the static exercise pages, taxonomy pages, sitemap, and robots file.
 
+Check the generated page color contrast after each build:
+
+```bash
+npm run check:seo-contrast
+```
+
 The root `404.html` file disables the default single-page application fallback.
 
 For a manual deployment, build the site before the Wrangler command:

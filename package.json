@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/generate-seo.mjs && node scripts/generate-taxonomy.mjs",
+    "check:seo-contrast": "node scripts/check-seo-contrast.mjs",
     "generate:seo": "node scripts/generate-seo.mjs && node scripts/generate-taxonomy.mjs",
     "generate:taxonomy": "node scripts/generate-taxonomy.mjs"
   },
