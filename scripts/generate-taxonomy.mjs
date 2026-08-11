@@ -33,7 +33,7 @@ const TAXONOMIES = [
   },
 ];
 
-const CSS = `:root{--bg:#f4f4f5;--surface:#fff;--text:#18181b;--muted:#71717a;--line:#e4e4e7;--accent:#ea580c}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}a{color:var(--accent)}.shell{width:min(1040px,calc(100% - 32px));margin:auto;padding:28px 0 64px}.topbar{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:22px}.back{color:var(--muted);text-decoration:none}.nav{display:flex;gap:10px;flex-wrap:wrap}.nav a{text-decoration:none}.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:clamp(20px,4vw,40px)}h1{margin:0;font-size:clamp(30px,5vw,48px);line-height:1.08;text-transform:capitalize}.lede{margin:10px 0 28px;color:var(--muted);font-size:17px}.grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.grid a{display:block;border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none}.grid strong{display:block;color:var(--text);text-transform:capitalize}.grid span{display:block;margin-top:3px;color:var(--muted);font-size:13px}`;
+const CSS = `:root{--bg:#f4f4f5;--surface:#fff;--text:#18181b;--muted:#71717a;--line:#e4e4e7;--accent:#ea580c}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}a{color:var(--accent)}.shell{width:min(1040px,calc(100% - 32px));margin:auto;padding:28px 0 64px}.topbar{display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:22px}.back{color:var(--muted);text-decoration:none}.nav{display:flex;gap:10px;flex-wrap:wrap}.nav a{text-decoration:none}.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:clamp(20px,4vw,40px)}.breadcrumbs{margin:0 0 18px;color:var(--muted);font-size:14px}.breadcrumbs ol{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}.breadcrumbs li{display:flex;align-items:center}.breadcrumbs li+li::before{content:"/";margin-right:6px;color:#a1a1aa}.breadcrumbs a{color:var(--muted);text-decoration:none}.breadcrumbs a:hover{color:var(--text)}h1{margin:0;font-size:clamp(30px,5vw,48px);line-height:1.08;text-transform:capitalize}.lede{margin:10px 0 28px;color:var(--muted);font-size:17px}.grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.grid a{display:block;border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none}.grid strong{display:block;color:var(--text);text-transform:capitalize}.grid span{display:block;margin-top:3px;color:var(--muted);font-size:13px}`;
 
 function normalizeSiteUrl(value) {
   const url = new URL(value);
@@ -99,7 +99,32 @@ function siteNav() {
   ).join('')}</nav>`;
 }
 
-function renderPage(title, description, canonicalUrl, body) {
+function renderBreadcrumbs(items) {
+  return `<nav class="breadcrumbs" aria-label="Breadcrumb"><ol>${items
+    .map((item, index) => {
+      const isCurrent = index === items.length - 1;
+      return isCurrent
+        ? `<li><span aria-current="page">${escapeHtml(item.name)}</span></li>`
+        : `<li><a href="${escapeHtml(item.path)}">${escapeHtml(item.name)}</a></li>`;
+    })
+    .join('')}</ol></nav>`;
+}
+
+function breadcrumbJsonLd(items) {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: new URL(item.path, `${SITE_URL}/`).toString(),
+    })),
+  }).replace(/</g, '\\u003c');
+}
+
+function renderPage(title, description, canonicalUrl, body, breadcrumbs) {
+  const breadcrumbData = breadcrumbJsonLd(breadcrumbs);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -113,11 +138,12 @@ function renderPage(title, description, canonicalUrl, body) {
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
   <link rel="stylesheet" href="/assets/taxonomy-page.css">
+  <script type="application/ld+json">${breadcrumbData}</script>
 </head>
 <body>
   <main class="shell">
     <div class="topbar"><a class="back" href="/">← Exercise Dataset</a>${siteNav()}</div>
-    <section class="panel">${body}</section>
+    <section class="panel">${renderBreadcrumbs(breadcrumbs)}${body}</section>
   </main>
 </body>
 </html>`;
@@ -139,17 +165,29 @@ function groupIndex(taxonomy, groups) {
 <ul class="grid">${groups.map((group) =>
   `<li><a href="/${taxonomy.path}/${escapeHtml(group.slug)}/"><strong>${escapeHtml(group.value)}</strong><span>${group.items.length} exercise${group.items.length === 1 ? '' : 's'}</span></a></li>`,
 ).join('')}</ul>`;
-  return renderPage(taxonomy.title, taxonomy.description, `${SITE_URL}/${taxonomy.path}/`, body);
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Exercises', path: '/exercises/' },
+    { name: taxonomy.label, path: `/${taxonomy.path}/` },
+  ];
+  return renderPage(taxonomy.title, taxonomy.description, `${SITE_URL}/${taxonomy.path}/`, body, breadcrumbs);
 }
 
 function groupPage(taxonomy, group) {
   const title = `${group.value} Exercises`;
   const description = `Browse ${group.items.length} exercise${group.items.length === 1 ? '' : 's'} for ${group.value}, with animations, target muscles, equipment and step-by-step instructions.`;
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Exercises', path: '/exercises/' },
+    { name: taxonomy.label, path: `/${taxonomy.path}/` },
+    { name: group.value, path: `/${taxonomy.path}/${group.slug}/` },
+  ];
   return renderPage(
     title,
     description,
     `${SITE_URL}/${taxonomy.path}/${group.slug}/`,
     `<h1>${escapeHtml(title)}</h1><p class="lede">${escapeHtml(description)}</p>${exerciseList(group.items)}`,
+    breadcrumbs,
   );
 }
 
@@ -160,11 +198,16 @@ function allExercises(exercises, slugs) {
   const count = items.length.toLocaleString('en-US');
   const title = `All ${count} Exercises`;
   const description = `Browse all ${count} fitness exercises with target muscles, equipment, animations and step-by-step instructions.`;
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Exercises', path: '/exercises/' },
+  ];
   return renderPage(
     title,
     description,
     `${SITE_URL}/exercises/`,
     `<h1>${escapeHtml(title)}</h1><p class="lede">${escapeHtml(description)}</p>${exerciseList(items)}`,
+    breadcrumbs,
   );
 }
 
