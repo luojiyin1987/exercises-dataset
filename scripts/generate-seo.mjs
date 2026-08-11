@@ -200,17 +200,17 @@ function renderAlternateLinks(alternateUrls) {
   return links.join('\n  ');
 }
 
-function renderLanguageNav(currentLocale, alternateUrls) {
+function renderLanguageNav(currentLocale, alternateUrls, slug) {
   const links = LOCALES.filter((locale) => alternateUrls.has(locale.key)).map((locale) => {
     if (locale.key === currentLocale.key) {
       return `<span lang="${locale.lang}" aria-current="page">${escapeHtml(locale.name)}</span>`;
     }
-    return `<a href="${escapeHtml(alternateUrls.get(locale.key))}" hreflang="${locale.hreflang}" lang="${locale.lang}">${escapeHtml(locale.name)}</a>`;
+    return `<a href="${escapeHtml(localizedPath(slug, locale))}" hreflang="${locale.hreflang}" lang="${locale.lang}">${escapeHtml(locale.name)}</a>`;
   });
   return `<nav class="languages" aria-label="Language">${links.join('')}</nav>`;
 }
 
-function renderExercisePage(exercise, pageUrl, locale, alternateUrls) {
+function renderExercisePage(exercise, pageUrl, locale, alternateUrls, slug) {
   const name = String(exercise.name || `Exercise ${exercise.id || ''}`).trim();
   const description = makeDescription(exercise, locale, name);
   const imageUrl = absoluteAssetUrl(exercise.image);
@@ -266,7 +266,7 @@ function renderExercisePage(exercise, pageUrl, locale, alternateUrls) {
   <main class="shell">
     <div class="topbar">
       <a class="back" href="/">← ${escapeHtml(locale.back)}</a>
-      ${renderLanguageNav(locale, alternateUrls)}
+      ${renderLanguageNav(locale, alternateUrls, slug)}
     </div>
     <article>
       <h1>${escapeHtml(name)}</h1>
@@ -344,7 +344,7 @@ async function main() {
       const pageUrl = alternateUrls.get(locale.key);
       const outputFile = outputFileFor(slug, locale);
       await mkdir(dirname(outputFile), { recursive: true });
-      await writeFile(outputFile, renderExercisePage(exercise, pageUrl, locale, alternateUrls), 'utf8');
+      await writeFile(outputFile, renderExercisePage(exercise, pageUrl, locale, alternateUrls, slug), 'utf8');
       exerciseUrls.push(pageUrl);
       localePageCounts.set(locale.key, localePageCounts.get(locale.key) + 1);
     }
